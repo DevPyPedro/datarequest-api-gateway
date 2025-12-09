@@ -1,5 +1,5 @@
 from app.domain.repositories.user_repository_interface import UserRepositoryInterface
-from app.application.services.jwt import JWTService
+from app.application.services.jwt_service import JWTService
 
 class UserReistertionUseCase:
     
@@ -17,9 +17,7 @@ class UserReistertionUseCase:
             if new_user is None:
                 raise Exception("User creation failed")
             
-            token_data = {"user_id": new_user.userid, "email": new_user.useremail}
-            access_token = self.jwt_service.create_access_token(token_data)
-            return {"user": new_user, "access_token": access_token}
+            return {"username": new_user, "response": "User created successfully."}
         except Exception as e:
             raise e
     
