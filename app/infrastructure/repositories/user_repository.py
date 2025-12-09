@@ -11,7 +11,6 @@ class UserRepository(UserRepositoryInterface):
         """Logic to retrieve a user by their ID from the database"""
         try:
             result = pd.read_sql(self.db_session.query(User).filter(User.userid == user_id).statement, self.db_session.bind)
-            print(result.to_dict(orient="records")[0])
             if result.empty:
                 return None
             return result.to_dict(orient="records")[0]
@@ -27,4 +26,12 @@ class UserRepository(UserRepositoryInterface):
             return new_user
         except Exception as e:
             self.db_session.rollback()
+            raise e
+        
+    def user_exists(self, email: str) -> bool:
+        """Check if a user with the given email already exists"""
+        try:
+            result = pd.read_sql(self.db_session.query(User).filter(User.useremail == email).statement, self.db_session.bind)
+            return not result.empty
+        except Exception as e:
             raise e

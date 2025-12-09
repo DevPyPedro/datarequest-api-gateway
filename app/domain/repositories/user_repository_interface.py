@@ -11,3 +11,8 @@ class UserRepositoryInterface(ABC):
     def create_user(self, user_data: dict) -> dict:
         """Create a new user with the provided data."""
         pass
+
+    @abstractmethod
+    def user_exists(self, email: str) -> bool:
+        """Check if a user exists by their email."""
+        pass
