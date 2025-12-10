@@ -2,10 +2,12 @@ import pandas as pd
 
 from app.domain.repositories.user_repository_interface import UserRepositoryInterface
 from app.domain.entities.users import User
+from app.infrastructure.logs_service import LogService
 class UserRepository(UserRepositoryInterface):
     
     def __init__(self, db_session: any):
         self.db_session = db_session
+        self.logger = LogService(name="UserRepository")
 
     def get_user_by_id(self, user_id: int):
         """Logic to retrieve a user by their ID from the database"""
@@ -22,10 +24,8 @@ class UserRepository(UserRepositoryInterface):
         try:
             new_user = User(**user_data)
             self.db_session.add(new_user)
-            self.db_session.commit()
             return new_user
         except Exception as e:
-            self.db_session.rollback()
             raise e
         
     def user_exists(self, email: str) -> bool:
@@ -34,4 +34,6 @@ class UserRepository(UserRepositoryInterface):
             result = pd.read_sql(self.db_session.query(User).filter(User.useremail == email).statement, self.db_session.bind)
             return not result.empty
         except Exception as e:
+            self.logger.error(f"Error checking if user exists: {e}")
             raise e
+        

@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+# --- Routing Imports ---
+from app.presentation.routers.login import router as login_router
+
 # --- Pydantic Models ---
 # Pydantic models define the data shape and validation for requests and responses.
 class HealthCheck(BaseModel):
@@ -16,7 +19,7 @@ class Message(BaseModel):
 # It's a good practice to add metadata for your API.
 # This information is used in the automatically generated documentation.
 app = FastAPI(
-    title="My FastAPI Application",
+    title="DataRequest API",
     description="This is a sample FastAPI application following best practices.",
     version="1.0.0",
     contact={
@@ -48,3 +51,4 @@ async def read_root():
 
 
 
+app.include_router(login_router, prefix="/auth", tags=["Authentication"])

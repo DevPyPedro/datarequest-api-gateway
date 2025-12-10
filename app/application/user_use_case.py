@@ -1,11 +1,12 @@
 from app.domain.repositories.user_repository_interface import UserRepositoryInterface
 from app.application.services.jwt_service import JWTService
 
-class UserReistertionUseCase:
+class UserRegisterUseCase:
     
-    def __init__(self, user_repository: UserRepositoryInterface):
+    def __init__(self, user_repository: UserRepositoryInterface, db: any = None):
         self.user_repository = user_repository
         self.jwt_service = JWTService()
+        self.db = db # Optigonal database session if needed (db using for transactions commit/rollback)
 
     def execute(self, user_data):
         try:
@@ -17,10 +18,14 @@ class UserReistertionUseCase:
             if new_user is None:
                 raise Exception("User creation failed")
             
-            return {"username": new_user, "response": "User created successfully."}
+            self.db.commit()  # Commit the transaction if using a DB session
+            return {"username": str(new_user) , "message": "User created successfully."}
         except Exception as e:
+            self.db.rollback()  # Rollback in case of error
             raise e
     
+class UserLoginUseCase:
+    pass
     
 
 
