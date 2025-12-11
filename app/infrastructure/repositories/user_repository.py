@@ -40,7 +40,7 @@ class UserRepository(UserRepositoryInterface):
         """Check if a user with the given email already exists"""
         try:
             result = pd.read_sql(self.db_session.query(User).filter(User.useremail == email).statement, self.db_session.bind)
-            return not result.empty
+            return result
         except Exception as e:
             self.logger.error(f"Error checking if user exists: {e}")
             raise e

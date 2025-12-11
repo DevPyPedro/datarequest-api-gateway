@@ -26,7 +26,6 @@ def register_user(
             username=data.username,
             userpassword=data.userpassword
         )
-        print('ok')
         result = use_case.execute(dto)
         return result
     except ValueError as ve:
@@ -42,6 +41,6 @@ def register_user(
             status_code=500,
             detail={
                 "status": "error",
-                "message": f"An error occurred during user registration. : {3}"
+                "message": f"An error occurred during user registration.: {e}"
             }
         )

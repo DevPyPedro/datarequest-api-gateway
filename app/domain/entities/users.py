@@ -10,3 +10,5 @@ class User(Base):
     useremail = Column(String, unique=True, index=True, nullable=False)
     userpassword = Column(String, nullable=False)
     userposition = Column(String, default="Intern")
+
+

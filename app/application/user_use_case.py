@@ -6,12 +6,12 @@ class UserRegisterUseCase:
     
     def __init__(self, user_repository: UserRepositoryInterface, db: any = None):
         self.user_repository = user_repository
-        self.jwt_service = JWTService()
         self.db = db # Optigonal database session if needed (db using for transactions commit/rollback)
 
     def execute(self, user_data: RegisterUserDTO):
         try:
-            if self.user_repository.user_exists(user_data.useremail):
+            result = self.user_repository.user_exists(user_data.useremail)
+            if not result.empty:
                 raise ValueError("User already exists")
         
             new_user = self.user_repository.create_user(user_data)
@@ -26,7 +26,24 @@ class UserRegisterUseCase:
             raise e
     
 class UserLoginUseCase:
-    pass
-    
+    def __init__(self, user_repository: UserRepositoryInterface):
+        self.user_repository = user_repository
+        self.jwt_service = JWTService()
 
+    def execute(self, user_data: RegisterUserDTO):
 
+        try:
+            # Verify if user exists
+            result = self.user_repository.user_exists(user_data.useremail)
+            if not result.empty:
+                raise ValueError("User already exists")
+            
+            # Create token payload
+            self.jwt_service.create_access_token(
+                data={"sub": user_data.useremail, "username": user_data.username},
+                expires_delta=60
+            )
+
+            return {"status": "success", "message": "User logged in successfully.", "token": self.jwt_service.token}
+        except Exception as e:
+            raise e
