@@ -1,8 +1,9 @@
 import pandas as pd 
 
 from app.domain.repositories.user_repository_interface import UserRepositoryInterface
-from app.domain.entities.users import User
 from app.infrastructure.logs_service import LogService
+from app.infrastructure.hash_service import PasswordService
+from app.domain.entities.users import User
 class UserRepository(UserRepositoryInterface):
     
     def __init__(self, db_session: any):
@@ -22,9 +23,16 @@ class UserRepository(UserRepositoryInterface):
     def create_user(self, user_data):
         """Logic to create a new user in the database"""
         try:
-            new_user = User(**user_data)
+            hashed_password = PasswordService.hash_password(user_data.userpassword)
+            user_data.userpassword = hashed_password
+
+            new_user = User(
+                username=user_data.username,
+                useremail=user_data.useremail,
+                userpassword=user_data.userpassword
+            )
             self.db_session.add(new_user)
-            return new_user
+            return True
         except Exception as e:
             raise e
         

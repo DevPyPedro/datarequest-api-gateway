@@ -6,6 +6,6 @@ class UserRegisterSchema(BaseModel):
     userpassword: str
 
 class UserRegisterResponseSchema(BaseModel):
-    username: str
+    status: str
     message: str = Field(..., example="User created successfully.")
 

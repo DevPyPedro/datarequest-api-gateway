@@ -5,3 +5,4 @@ SQLAlchemy
 pytest
 psycopg2-binary
 pyjwt
+bcrypt

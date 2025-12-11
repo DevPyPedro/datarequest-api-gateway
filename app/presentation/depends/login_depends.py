@@ -10,6 +10,7 @@ def get_user_repository(db_session = Depends(get_db_session)) -> UserRepository:
 
 
 def get_user_register_use_case(
-    user_repository: UserRepository = Depends(get_user_repository)
+    user_repository: UserRepository = Depends(get_user_repository),
+    db = Depends(get_db_session)
 ) -> UserRegisterUseCase:
-    return UserRegisterUseCase(user_repository)
+    return UserRegisterUseCase(user_repository, db=db)
