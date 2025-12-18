@@ -5,14 +5,12 @@ from app.infrastructure.redis_service import RedisCache
 
 class UserRegisterUseCase:
     
-    def __init__(self, user_repository: UserRepositoryInterface, db: any = None):
+    def __init__(self, user_repository: UserRepositoryInterface):
         self.user_repository = user_repository
-        self.db = db # Optigonal database session if needed (db using for transactions commit/rollback)
 
     def execute(self, user_data: RegisterUserDTO):
         
-        result = self.user_repository.user_exists(user_data.useremail)
-        if not result.empty:
+        if  self._user_exists(user_data.useremail):
             raise ValueError("User already exists")
     
         new_user = self.user_repository.create_user(user_data)
@@ -20,8 +18,10 @@ class UserRegisterUseCase:
         if new_user is None:
             raise Exception("User creation failed")
         
-        self.db.commit()  # Commit the transaction if using a DB session
         return {"status": str(new_user) , "message": "User created successfully."}
+    
+    def _user_exists(self, email: str) -> bool:
+        return not self.user_repository.user_exists(email).empty
         
     
 class UserLoginUseCase:
@@ -47,6 +47,9 @@ class UserLoginUseCase:
 
         if not self._check_code(login_data.useremail, login_data.code_verification):
             raise ValueError("Invalid verification code")
+        
+        self.db_code.delete(login_data.useremail)
+        
 
         return {"status": "success", "message": "Login successful", "access_token": token, "token_type": "bearer"}
 
@@ -58,6 +61,10 @@ class UserLoginUseCase:
             data={"sub": login_data.useremail},
             expires_delta=60,
         )
+    
+    def _store_token(self, email: str, token: str):
+        self.db_token.set(email, token) # Token expires in 30 minutes
+        self.db_token.expire(email, 1800)
     
     def _check_code(self, email: str, code: int) -> bool:
         stored_code = self.db_code.get(email)

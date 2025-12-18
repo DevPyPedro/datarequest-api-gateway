@@ -15,7 +15,7 @@ class SMTPService:
 
     def __init__(self):
         self.host = os.getenv("SMTP_HOST")
-        self.port = int(os.getenv("SMTP_PORT", 587))
+        self.port = int(os.getenv("SMTP_PORT"))
         self.username = os.getenv("SMTP_USERNAME")
         self.password = os.getenv("SMTP_PASSWORD")
         self.use_tls = os.getenv("SMTP_USE_TLS", "true").lower() == "true",

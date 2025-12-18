@@ -9,3 +9,14 @@ class UserRegisterResponseSchema(BaseModel):
     status: str
     message: str = Field(..., example="User created successfully.")
 
+class UserLoginSchema(BaseModel):
+    useremail: EmailStr
+    userpassword: str
+    code_verification: int
+
+class UserLoginResponseSchema(BaseModel):
+    status: str
+    message: str
+    access_token: str
+    token_type: str = Field(..., example="bearer")
+

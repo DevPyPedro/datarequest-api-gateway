@@ -1,4 +1,3 @@
-from src.infra.config import configCache
 from typing import Any, Optional, Union
 import redis
 import json
