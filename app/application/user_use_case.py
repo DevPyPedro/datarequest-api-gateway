@@ -1,6 +1,7 @@
 from app.domain.repositories.user_repository_interface import UserRepositoryInterface
 from app.application.services.jwt_service import JWTService
-from app.application.dto.login_dto import RegisterUserDTO
+from app.application.dto.login_dto import RegisterUserDTO, LoginUserDTO
+from app.infrastructure.redis_service import RedisCache
 
 class UserRegisterUseCase:
     
@@ -9,41 +10,55 @@ class UserRegisterUseCase:
         self.db = db # Optigonal database session if needed (db using for transactions commit/rollback)
 
     def execute(self, user_data: RegisterUserDTO):
-        try:
-            result = self.user_repository.user_exists(user_data.useremail)
-            if not result.empty:
-                raise ValueError("User already exists")
         
-            new_user = self.user_repository.create_user(user_data)
+        result = self.user_repository.user_exists(user_data.useremail)
+        if not result.empty:
+            raise ValueError("User already exists")
+    
+        new_user = self.user_repository.create_user(user_data)
 
-            if new_user is None:
-                raise Exception("User creation failed")
-            
-            self.db.commit()  # Commit the transaction if using a DB session
-            return {"status": str(new_user) , "message": "User created successfully."}
-        except Exception as e:
-            self.db.rollback()  # Rollback in case of error
-            raise e
+        if new_user is None:
+            raise Exception("User creation failed")
+        
+        self.db.commit()  # Commit the transaction if using a DB session
+        return {"status": str(new_user) , "message": "User created successfully."}
+        
     
 class UserLoginUseCase:
-    def __init__(self, user_repository: UserRepositoryInterface):
+    def __init__(
+        self,
+        user_repository: UserRepositoryInterface,
+        jwt_service: JWTService,
+        db_token: RedisCache,
+        db_code: RedisCache,
+    ):
         self.user_repository = user_repository
-        self.jwt_service = JWTService()
+        self.jwt_service = jwt_service
+        self.db_token = db_token
+        self.db_code = db_code
 
-    def execute(self, user_data: RegisterUserDTO):
 
-        try:
-            # Verify if user exists
-            result = self.user_repository.user_exists(user_data.useremail)
-            if not result.empty:
-                raise ValueError("User already exists")
-            
-            # Create token payload
-            self.jwt_service.create_access_token(
-                data={"sub": user_data.useremail, "username": user_data.username},
-                expires_delta=60
-            )
+    def execute(self, login_data: LoginUserDTO) -> dict:
+        if not self._user_exists(login_data.useremail):
+            raise ValueError("User does not exist")
 
-            return {"status": "success", "message": "User logged in successfully.", "token": self.jwt_service.token}
-        except Exception as e:
-            raise e
+        token = self._generate_token(login_data)
+        self._store_token(login_data.useremail, token)
+
+        if not self._check_code(login_data.useremail, login_data.code_verification):
+            raise ValueError("Invalid verification code")
+
+        return {"status": "success", "message": "Login successful", "access_token": token, "token_type": "bearer"}
+
+    def _user_exists(self, email: str) -> bool:
+        return not self.user_repository.user_exists(email).empty
+
+    def _generate_token(self, login_data: LoginUserDTO) -> str:
+        return self.jwt_service.create_access_token(
+            data={"sub": login_data.useremail},
+            expires_delta=60,
+        )
+    
+    def _check_code(self, email: str, code: int) -> bool:
+        stored_code = self.db_code.get(email)
+        return stored_code is not None and int(stored_code) == code

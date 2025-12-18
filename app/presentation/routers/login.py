@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.application.user_use_case import UserRegisterUseCase
 from app.application.dto.login_dto import RegisterUserDTO
-from app.presentation.schemas.login_schema import (
+from app.presentation.schemas.login.login_schema import (
     UserRegisterSchema,
     UserRegisterResponseSchema
 )
