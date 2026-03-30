@@ -21,7 +21,7 @@ class UserRegisterUseCase:
         return {"status": str(new_user) , "message": "User created successfully."}
     
     def _user_exists(self, email: str) -> bool:
-        return not self.user_repository.user_exists(email).empty
+        return self.user_repository.user_exists(email)
         
     
 class UserLoginUseCase:
@@ -54,7 +54,7 @@ class UserLoginUseCase:
         return {"status": "success", "message": "Login successful", "access_token": token, "token_type": "bearer"}
 
     def _user_exists(self, email: str) -> bool:
-        return not self.user_repository.user_exists(email).empty
+        return self.user_repository.user_exists(email)
 
     def _generate_token(self, login_data: LoginUserDTO) -> str:
         return self.jwt_service.create_access_token(

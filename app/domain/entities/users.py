@@ -3,7 +3,7 @@ from app.infrastructure.db import Base
 
 class User(Base):
     __tablename__ = "users"
-    __table_args__ = {"schema": "auth"}
+    __table_args__ = {"schema": "user_auth"}
 
     userid = Column(Integer, primary_key=True, index=True)
     username = Column(String, nullable=False)

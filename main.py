@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from app.infrastructure.db import init_db
 
 # --- Routing Imports ---
 from app.presentation.routers.login import router as login_router
@@ -30,6 +31,11 @@ app = FastAPI(
         "name": "MIT",
     },
 )
+
+
+@app.on_event("startup")
+def on_startup():
+    init_db()
 
 
 # --- API Endpoints ---

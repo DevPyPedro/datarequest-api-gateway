@@ -1,9 +1,8 @@
-import pandas as pd 
-
 from app.domain.repositories.user_repository_interface import UserRepositoryInterface
 from app.infrastructure.logs_service import LogService
 from app.infrastructure.hash_service import PasswordService
 from app.domain.entities.users import User
+
 class UserRepository(UserRepositoryInterface):
     
     def __init__(self, db_session: any):
@@ -13,10 +12,15 @@ class UserRepository(UserRepositoryInterface):
     def get_user_by_id(self, user_id: int):
         """Logic to retrieve a user by their ID from the database"""
         try:
-            result = pd.read_sql(self.db_session.query(User).filter(User.userid == user_id).statement, self.db_session.bind)
-            if result.empty:
+            user = self.db_session.query(User).filter(User.userid == user_id).first()
+            if user is None:
                 return None
-            return result.to_dict(orient="records")[0]
+            return {
+                "userid": user.userid,
+                "username": user.username,
+                "useremail": user.useremail,
+                "userposition": user.userposition,
+            }
         except Exception as e:
             raise e
 
@@ -39,9 +43,15 @@ class UserRepository(UserRepositoryInterface):
     def user_exists(self, email: str) -> bool:
         """Check if a user with the given email already exists"""
         try:
-            result = pd.read_sql(self.db_session.query(User).filter(User.useremail == email).statement, self.db_session.bind)
-            return result
+            user = self.db_session.query(User).filter(User.useremail == email).first()
+            return user is not None
         except Exception as e:
-            self.logger.error(f"Error checking if user exists: {e}")
+            bind = self.db_session.get_bind()
+            db_name = getattr(bind.url, "database", "unknown")
+            db_host = getattr(bind.url, "host", "unknown")
+
+            self.logger.error(
+                f"Error checking if user exists (database={db_name}, host={db_host}): {e}"
+            )
             raise e
         
