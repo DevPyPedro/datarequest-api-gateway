@@ -21,8 +21,8 @@ class Message(BaseModel):
 # This information is used in the automatically generated documentation.
 app = FastAPI(
     title="DataRequest API",
-    description="This is a sample FastAPI application following best practices.",
-    version="1.0.0",
+    description="API for user registration, authentication, session control and token management with Redis.",
+    version="1.1.0",
     contact={
         "name": "API Support",
         "email": "support@example.com",

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Any, Optional
 
 class UserRepositoryInterface(ABC):
     @abstractmethod
@@ -15,4 +15,9 @@ class UserRepositoryInterface(ABC):
     @abstractmethod
     def user_exists(self, email: str) -> bool:
         """Check if a user exists by their email."""
+        pass
+
+    @abstractmethod
+    def get_user_by_email(self, email: str) -> Optional[Any]:
+        """Retrieve a user by their email."""
         pass

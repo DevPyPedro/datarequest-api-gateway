@@ -67,6 +67,21 @@ class RedisCache:
         """
         return self.client.get(key)
 
+    def set_json(self, key: str, value: Any, ttl: Optional[int] = None) -> None:
+        """
+        Stores a JSON-serializable payload in Redis.
+        """
+        return self.client.set(key, json.dumps(value), ex=ttl)
+
+    def get_json(self, key: str) -> Optional[dict]:
+        """
+        Retrieves and deserializes a JSON payload from Redis.
+        """
+        value = self.client.get(key)
+        if value is None:
+            return None
+        return json.loads(value)
+
     def delete(self, key: str) -> None:
         """
         Remove uma chave e seu valor correspondente do Redis.
@@ -106,7 +121,13 @@ class RedisCache:
             dict: Dicionário com os pares armazenados na hash.
         """
         result = self.client.hgetall(id_session)
-        return {k: json.loads(v) for k, v in result.items()}
+        parsed = {}
+        for key, value in result.items():
+            try:
+                parsed[key] = json.loads(value)
+            except (TypeError, json.JSONDecodeError):
+                parsed[key] = value
+        return parsed
 
     def expire(self, id_session: str, timeout: int) -> None:
         """

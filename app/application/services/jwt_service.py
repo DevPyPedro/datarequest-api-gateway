@@ -14,7 +14,14 @@ class JWTService:
 
     SECRET_KEY = os.getenv("JWT_SECRET_KEY")
     ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-    ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
+    ACCESS_TOKEN_EXPIRE_MINUTES = int(
+        os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+        or os.getenv("JWT_EXPIRATION_MINUTES", 30)
+    )
+    REFRESH_TOKEN_EXPIRE_MINUTES = min(
+        int(os.getenv("REFRESH_TOKEN_EXPIRE_MINUTES", 240)),
+        240,
+    )
 
     ISSUER = os.getenv("JWT_ISSUER")  # opcional
     AUDIENCE = os.getenv("JWT_AUDIENCE")  # opcional
@@ -41,8 +48,8 @@ class JWTService:
 
         to_encode = data.copy()
 
-        now = str(datetime.now(timezone.utc))
-        expire = now + str((expires_delta or timedelta(minutes=cls.ACCESS_TOKEN_EXPIRE_MINUTES)))
+        now = datetime.now(timezone.utc)
+        expire = now + (expires_delta or timedelta(minutes=cls.ACCESS_TOKEN_EXPIRE_MINUTES))
 
         to_encode.update({
             "exp": expire,

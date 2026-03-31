@@ -1,7 +1,12 @@
 from fastapi import Depends
 
 from app.infrastructure.repositories.user_repository import UserRepository
-from app.application.user_use_case import UserRegisterUseCase, UserLoginUseCase
+from app.application.user_use_case import (
+    UserLoginUseCase,
+    UserLogoutUseCase,
+    UserRefreshTokenUseCase,
+    UserRegisterUseCase,
+)
 from app.infrastructure.db import get_db as get_db_session
 from app.application.services.jwt_service import JWTService
 from app.infrastructure.redis_service import RedisCache
@@ -36,6 +41,26 @@ def get_user_login_use_case(
         jwt_service,
         db_token,
         db_code,
+    )
+
+
+def get_user_refresh_token_use_case(
+    jwt_service = Depends(_get_jwt_service),
+    db_token = Depends(_get_redis_cache_token),
+) -> UserRefreshTokenUseCase:
+    return UserRefreshTokenUseCase(
+        jwt_service,
+        db_token,
+    )
+
+
+def get_user_logout_use_case(
+    jwt_service = Depends(_get_jwt_service),
+    db_token = Depends(_get_redis_cache_token),
+) -> UserLogoutUseCase:
+    return UserLogoutUseCase(
+        jwt_service,
+        db_token,
     )
 
 def get_email_service() -> SMTPService:

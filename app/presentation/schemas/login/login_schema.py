@@ -18,5 +18,15 @@ class UserLoginResponseSchema(BaseModel):
     status: str
     message: str
     access_token: str
+    refresh_token: str
     token_type: str = Field(..., example="bearer")
+
+
+class RefreshTokenSchema(BaseModel):
+    refresh_token: str
+
+
+class LogoutResponseSchema(BaseModel):
+    status: str
+    message: str
 

@@ -54,4 +54,18 @@ class UserRepository(UserRepositoryInterface):
                 f"Error checking if user exists (database={db_name}, host={db_host}): {e}"
             )
             raise e
+
+    def get_user_by_email(self, email: str):
+        """Retrieve the full user entity by email."""
+        try:
+            return self.db_session.query(User).filter(User.useremail == email).first()
+        except Exception as e:
+            bind = self.db_session.get_bind()
+            db_name = getattr(bind.url, "database", "unknown")
+            db_host = getattr(bind.url, "host", "unknown")
+
+            self.logger.error(
+                f"Error retrieving user by email (database={db_name}, host={db_host}): {e}"
+            )
+            raise e
         

@@ -11,4 +11,8 @@ class LoginUserDTO:
     useremail: str
     userpassword: str
     code_verification: int
-    
+
+
+@dataclass
+class RefreshTokenDTO:
+    refresh_token: str
